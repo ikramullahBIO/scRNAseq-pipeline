@@ -1,15 +1,15 @@
 ## =============================================================================
 ## Script:   scRNAseq_pipeline.R
-## Title:    Reproducible scRNA-seq analysis pipeline (single-file master script)
+## Title:    Reproducible scRNA-seq analysis pipeline (By: IKRAM)
 ## =============================================================================
-## A general-purpose, reproducible single-cell RNA-seq pipeline covering the
+## A reproducible single-cell RNA-seq pipeline covering the
 ## full standard Bioconductor workflow: QC -> normalisation -> feature
 ## selection -> PCA/UMAP -> (optional) batch correction -> clustering ->
 ## marker genes -> (optional) cell type annotation -> (optional) pseudobulk
 ## differential expression -> summary report.
 ##
-## It follows the structure taught in the GenE2 scRNA-seq introduction
-## workshop (jserizay.com/GenE2-scRNAseq-intro) - SingleCellExperiment,
+## It follows the structure taught in I2BC scRNA-seq introduction
+## workshop - SingleCellExperiment,
 ## scran/scuttle, scater, SingleR, DESeq2 - generalised here so it runs on
 ## ANY dataset and ANY metadata: every path, column name, and parameter is
 ## read from one YAML config file (config/pipeline_config.yml), so adapting
