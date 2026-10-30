@@ -1,0 +1,14 @@
+# Data, outputs, and logs are run-specific and can be large - keep the
+# pipeline code under version control, not its inputs/outputs.
+data/
+output/
+output_toy/
+logs/
+logs_toy/
+
+# renv (if you initialise it - see README) keeps its own library out of git
+renv/library/
+renv/staging/
+.Rproj.user/
+.Rhistory
+.RData

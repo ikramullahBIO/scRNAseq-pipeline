@@ -1,0 +1,63 @@
+# =============================================================================
+# toy_dataset_config.yml
+# Matching config for the synthetic data simulated by the --generate-toy
+# flag - use this to confirm the pipeline runs correctly in your environment
+# before pointing it at real data.
+#
+#   Rscript scRNAseq_pipeline.R config/toy_dataset_config.yml --generate-toy
+#
+# Batch correction and differential expression are turned ON here (the toy
+# dataset includes synthetic "batch" and "condition" columns) so a full run
+# exercises every optional step at least once. Annotation stays off by
+# default since it needs a real biological reference and internet access.
+# =============================================================================
+
+project:
+  name: "toy_dataset_test_run"
+  seed: 1234
+
+paths:
+  input_path: "data/raw/toy_sce.rds"
+  input_type: "rds_sce"
+  metadata_path: ""                 # colData already carries sample_id/batch/condition
+  metadata_join_column: "sample_id"
+  output_dir: "output_toy/"
+  log_dir: "logs_toy/"
+
+qc:
+  mito_pattern: "^MT-"
+  nmads: 3
+  min_genes_per_cell: 1              # the mock dataset is tiny/sparse - keep this permissive
+  min_cells_per_gene: 1
+
+normalization:
+  method: "deconvolution"
+
+feature_selection:
+  n_hvgs: 500                        # mockSCE() only simulates 2000 genes total
+
+dimensionality_reduction:
+  n_pcs: 10
+  run_umap: true
+  run_tsne: false
+
+batch_correction:
+  run: true
+  batch_var: "batch"
+
+clustering:
+  method: "graph_walktrap"
+  k_neighbors: 10
+
+annotation:
+  run: false
+  reference: "HumanPrimaryCellAtlasData"
+  label_column: "label.main"
+
+differential_expression:
+  run: true
+  condition_var: "condition"
+  group_levels: ["control", "treatment"]
+
+reproducibility:
+  save_session_info: true

@@ -1,0 +1,88 @@
+# =============================================================================
+# pipeline_config.yml
+# Central configuration for the scRNA-seq pipeline.
+#
+# Copy this file (e.g. to config/my_dataset_config.yml), edit the values for
+# your dataset, and pass its path to the master script:
+#     Rscript scRNAseq_pipeline.R config/my_dataset_config.yml
+#
+# The pipeline reads ONLY from this file, so a full re-run on a new dataset
+# never requires editing scRNAseq_pipeline.R itself - only this config.
+# Comments mark which fields are optional.
+# =============================================================================
+
+project:
+  name: "scRNAseq_analysis"   # used in output file names / report title
+  seed: 1234                   # single seed controls every stochastic step
+                                # (size-factor estimation, UMAP, clustering)
+                                # -> re-running with the same config + data +
+                                #    package versions reproduces identical results
+
+paths:
+  # input_type: one of
+  #   "10x_mtx"    -> a CellRanger-style directory with matrix.mtx(.gz),
+  #                   barcodes.tsv(.gz), features.tsv(.gz)
+  #   "10x_h5"     -> a single CellRanger .h5 file
+  #   "csv"        -> a plain genes-by-cells counts matrix (.csv/.tsv), genes
+  #                   as rows, cells as columns, first column/row = names
+  #   "rds_sce"    -> an .rds file already containing a SingleCellExperiment
+  #   "rds_matrix" -> an .rds file containing a (sparse) matrix of counts
+  input_path: "data/raw/"
+  input_type: "10x_mtx"
+
+  # Optional per-cell or per-sample metadata (e.g. sample ID, condition,
+  # batch, patient, timepoint). Leave "" to skip - the pipeline will still
+  # run, just without batch-correction / DE steps that need these columns.
+  metadata_path: "data/sample_metadata.csv"
+  # If metadata is per-SAMPLE rather than per-CELL, name the column (in both
+  # the metadata file and the loaded data) used to join them, e.g. "sample_id".
+  metadata_join_column: "sample_id"
+
+  output_dir: "output/"
+  log_dir: "logs/"
+
+qc:
+  mito_pattern: "^MT-"     # regex matching mitochondrial gene symbols/IDs
+                            # human: "^MT-"   mouse: "^mt-"   check your
+                            # reference annotation's naming convention
+  nmads: 3                 # median-absolute-deviations threshold used to
+                            # flag outlier cells (library size, genes
+                            # detected, % mitochondrial) - scuttle::isOutlier
+  min_genes_per_cell: 200  # hard floor applied in addition to the MAD filter
+  min_cells_per_gene: 3    # genes detected in fewer cells than this are
+                            # dropped before downstream analysis
+
+normalization:
+  method: "deconvolution"  # "deconvolution" = scran pooled size factors
+                            # (recommended for heterogeneous populations);
+                            # "libsize" = simple library-size normalisation
+
+feature_selection:
+  n_hvgs: 2000              # number of highly variable genes to keep for PCA
+
+dimensionality_reduction:
+  n_pcs: 25                 # number of principal components to retain
+  run_umap: true
+  run_tsne: false           # UMAP is generally preferred; enable t-SNE too if wanted
+
+batch_correction:
+  run: false                # set true only if your data has >1 batch
+  batch_var: "batch"        # colData column name holding the batch label
+
+clustering:
+  method: "graph_walktrap"  # "graph_walktrap" or "graph_louvain"
+  k_neighbors: 10           # k for the shared/graph nearest-neighbour graph
+
+annotation:
+  run: false                 # requires internet access (downloads a celldex
+                              # reference on first use) - set true to enable
+  reference: "HumanPrimaryCellAtlasData"  # any celldex::*() reference function name
+  label_column: "label.main"              # which label column of the reference to use
+
+differential_expression:
+  run: false                 # requires a 2+ level condition column in metadata
+  condition_var: "condition" # colData column defining the groups to compare
+  group_levels: ["control", "treatment"]  # exactly two levels, comparison = [2] vs [1]
+
+reproducibility:
+  save_session_info: true    # writes logs/sessionInfo.txt at the end of the run
